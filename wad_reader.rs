@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self, Read, Seek, SeekFrom};
 
 struct WADHeader {
     identification: [char; 4], // should be "IWAD" or "PWAD"
@@ -43,14 +43,65 @@ impl WADHeader {
     }
 }
 
-struct Directory {
-    filepos: i32, // integer holding a pointer to the start of the lump's data in the file.
-    size: i32,    // size of the lump in bytes
-    name: [char; 8], // name of the lump
+struct DirectoryEntry {
+    filepos: i32,
+    size: i32,
+    name: [char; 8],
 }
 
-struct Lump {
-    data: Vec<u8>, // the actual data of the lump
+impl DirectoryEntry {
+    fn new() -> DirectoryEntry {
+        DirectoryEntry {
+            filepos: 0,
+            size: 0,
+            name: [' '; 8],
+        }
+    }
+
+    fn read_entry(&mut self, file: &mut File) -> io::Result<()> {
+        // Buffer for reading i32 values
+        let mut int_buffer = [0u8; 4];
+
+        // Read the file position
+        file.read_exact(&mut int_buffer)?;
+        self.filepos = i32::from_le_bytes(int_buffer);
+
+        // Read the size
+        file.read_exact(&mut int_buffer)?;
+        self.size = i32::from_le_bytes(int_buffer);
+
+        // Buffer for reading the 8 characters of the name
+        let mut name_buffer = [0u8; 8];
+        file.read_exact(&mut name_buffer)?;
+
+        // Convert bytes to characters and store in name
+        for (i, &byte) in name_buffer.iter().enumerate() {
+            self.name[i] = byte as char;
+        }
+
+        Ok(())
+    }
+}
+
+struct Directory {
+    entries: Vec<DirectoryEntry>,
+}
+
+impl Directory {
+    fn new(num_entries: usize) -> Directory {
+        Directory {
+            entries: Vec::with_capacity(num_entries),
+        }
+    }
+
+    fn read_entries(&mut self, file: &mut File, num_entries: usize) -> io::Result<()> {
+        for _ in 0..num_entries {
+            let mut entry = DirectoryEntry::new();
+            entry.read_entry(file)?;
+            self.entries.push(entry);
+        }
+        Ok(())
+    }
 }
 
 struct DoomEngine {
@@ -65,7 +116,7 @@ impl DoomEngine {
         }
     }
 
-    // Load the WAD file and read its header
+    // Load the WAD file, read its header, and directory
     fn load_wad(&self) -> io::Result<()> {
         // Open the file
         let mut file = File::open(&self.wad_path)?;
@@ -79,6 +130,21 @@ impl DoomEngine {
             "WAD identification: {:?}, num lumps: {}, info table offset: {}",
             header.identification, header.numlumps, header.infotableofs
         );
+
+        // Seek to the directory location using infotableofs
+        file.seek(SeekFrom::Start(header.infotableofs as u64))?;
+
+        // Create the directory and read all the entries
+        let mut directory = Directory::new(header.numlumps as usize);
+        directory.read_entries(&mut file, header.numlumps as usize)?;
+
+        // Print directory entries
+        for (i, entry) in directory.entries.iter().enumerate() {
+            println!(
+                "Entry {}: filepos: {}, size: {}, name: {:?}",
+                i, entry.filepos, entry.size, entry.name
+            );
+        }
 
         Ok(())
     }
