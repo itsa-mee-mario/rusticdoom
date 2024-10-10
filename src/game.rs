@@ -1,14 +1,14 @@
 use minifb::Key;
 
-use std::ops::{AddAssign, SubAssign};
+// use std::ops::{AddAssign, SubAssign}; // unused
 
 pub struct Game;
 
 const PLAYER_SPEED: f32 = 2.;
 const PLAYER_ROTATION_SPEED: f32 = 10.;
-const PLAYER_MAX_SPEED: f32 = 10.;
+// const PLAYER_MAX_SPEED: f32 = 10.; // unused
 
-struct BoundedFloat {
+pub struct BoundedFloat {
     value: f32,
     min: f32,
     max: f32,
@@ -18,28 +18,32 @@ impl BoundedFloat {
     pub fn new(value: f32, min: f32, max: f32) -> Self {
         BoundedFloat { value, min, max }
     }
+    
+    // unused
+    // fn check_bounds(&mut self) {
+    //     if self.value < self.min {
+    //         self.value = self.min;
+    //     }
+    //     if self.value > PLAYER_MAX_SPEED {
+    //         self.value = PLAYER_MAX_SPEED;
+    //     }
+    // }
 
-    fn check_bounds(&mut self) {
-        if self.value < self.min {
-            self.value = self.min;
-        }
-        if self.value > PLAYER_MAX_SPEED {
-            self.value = PLAYER_MAX_SPEED;
-        }
+    pub fn get_value(&self) -> f32 {
+        self.value
+    }
+
+}
+
+impl std::ops::AddAssign<f32> for BoundedFloat {
+    fn add_assign(&mut self, other: f32) {
+        self.value = (self.value + other).clamp(self.min, self.max);
     }
 }
 
-impl AddAssign<f32> for BoundedFloat {
-    fn add_assign(&mut self, rhs: f32) {
-        self.value += rhs;
-        self.check_bounds();
-    }
-}
-
-impl SubAssign<f32> for BoundedFloat {
-    fn sub_assign(&mut self, rhs: f32) {
-        self.value -= rhs;
-        self.check_bounds();
+impl std::ops::SubAssign<f32> for BoundedFloat {
+    fn sub_assign(&mut self, other: f32) {
+        self.value = (self.value - other).clamp(self.min, self.max);
     }
 }
 
@@ -96,32 +100,29 @@ impl Game {
 
     pub fn handle_input(&self, keys: &[Key], player: &mut Player) {
         if keys.contains(&Key::W) {
-            println!("W is pressed");
             player.increase_y();
+            println!("W is pressed. Player y increased to: {}", player.y.get_value());
         }
         if keys.contains(&Key::A) {
-            println!("A is pressed");
             player.decrease_x();
+            println!("A is pressed. Player x decreased to: {}", player.x.get_value());
         }
         if keys.contains(&Key::S) {
-            println!("S is pressed");
             player.decrease_y();
+            println!("S is pressed. Player y decreased to: {}", player.y.get_value());
         }
         if keys.contains(&Key::D) {
-            println!("D is pressed");
             player.increase_x();
+            println!("D is pressed. Player x increased to: {}", player.x.get_value());
         }
         if keys.contains(&Key::Left) {
-            println!("Left is pressed");
             player.rotate_left();
+            println!("Left is pressed. Player angle: {}", player.angle);
         }
         if keys.contains(&Key::Right) {
-            println!("Right is pressed");
             player.rotate_right();
+            println!("Right is pressed. Player angle: {}", player.angle);
         }
-        println!(
-            "Player x: {}, y: {}, a:{}",
-            player.x, player.y, player.angle
-        );
-    }
+    }    
+    
 }

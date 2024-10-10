@@ -4,11 +4,12 @@ mod game;
 mod render;
 
 use game::Game;
+use game::Player;
 use minifb::{Key, Window, WindowOptions};
 use render::{render, HEIGHT, WIDTH};
 
 fn main() {
-    let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT]; // screen buffer
+    let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT]; // Screen buffer
     let mut window = Window::new(
         "This will become a game!",
         WIDTH,
@@ -19,22 +20,21 @@ fn main() {
         panic!("{}", e);
     });
 
-    window.set_target_fps(60);
+    window.set_target_fps(20);
 
     let game = Game::new();
+    let mut player = Player::new();
 
-    let mut player = game::Player::new();
-
-    // main game loop
+    // Main game loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        // Handle input
+        // handle input and update player position
         let keys = window.get_keys();
         game.handle_input(&keys, &mut player);
 
-        // Render the frame
-        render(&mut buffer);
+        // render
+        render(&mut buffer, player.x.get_value(), player.y.get_value(), player.angle);
 
-        // Update window with the new buffer
+        // update window with the new buffer
         window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
     }
 }
