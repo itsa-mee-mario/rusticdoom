@@ -1,1 +1,0 @@
-/home/aaryan/Documents/Ashoka/Sem_7/Rust_ISM/Project/rusticdoom/target/debug/rusticdoom: /home/aaryan/Documents/Ashoka/Sem_7/Rust_ISM/Project/rusticdoom/src/game.rs /home/aaryan/Documents/Ashoka/Sem_7/Rust_ISM/Project/rusticdoom/src/main.rs /home/aaryan/Documents/Ashoka/Sem_7/Rust_ISM/Project/rusticdoom/src/render.rs
