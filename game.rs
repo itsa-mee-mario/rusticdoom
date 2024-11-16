@@ -43,8 +43,8 @@ pub struct Player {
 impl Player {
     pub fn new() -> Self {
         Player {
-            x: BoundedFloat::new(0., -10., 10.),
-            y: BoundedFloat::new(0., -10., 10.),
+            x: BoundedFloat::new(0., -10000., 10000.),
+            y: BoundedFloat::new(0., -10000., 10000.),
             angle: 0.0,
         }
     }

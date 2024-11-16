@@ -9,6 +9,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use wad_reader::DoomEngine;
+use wad_reader::WadData;
 
 // Structure to hold game state
 struct GameState {
@@ -17,9 +18,13 @@ struct GameState {
 }
 
 fn main() {
-    let doomengine = DoomEngine::new("wad/doom1.wad");
+    let mut doomengine = DoomEngine::new("wad/doom1.wad");
     println!("Loading WAD file: {}", doomengine.wad_path);
-    doomengine.load_wad();
+    let wad = doomengine.load_wad().unwrap();
+    let wad_data = WadData::new(doomengine);
+    let world_objects = wad_data.read_vertexes().unwrap();
+
+    // let map = wad.get_map("E1M1").unwrap();
 
     // Shared game state
     let game_state = Arc::new(Mutex::new(GameState {
@@ -77,6 +82,7 @@ fn main() {
                         player.x.get_value(),
                         player.y.get_value(),
                         player.angle,
+                        // &world_objects,
                     );
                 }
                 thread::sleep(Duration::from_millis(1));

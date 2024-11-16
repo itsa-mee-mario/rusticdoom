@@ -2,10 +2,17 @@ pub const WIDTH: usize = 640;
 pub const HEIGHT: usize = 640;
 use std::f32::consts::PI;
 
-pub fn render(buffer: &mut Vec<u32>, player_x: f32, player_y: f32, player_angle: f32) {
+pub fn render(
+    buffer: &mut Vec<u32>,
+    player_x: f32,
+    player_y: f32,
+    player_angle: f32,
+    // world_objects: &Vec<(f32, f32)>,
+) {
     for i in buffer.iter_mut() {
         *i = 0x000000;
     }
+
     // renderes cross in front of the player
     let num_points_per_line = 5;
     let spacing = 4.0;
@@ -53,9 +60,11 @@ pub fn render(buffer: &mut Vec<u32>, player_x: f32, player_y: f32, player_angle:
         let rotated_y = relative_x * sin_angle + relative_y * cos_angle;
 
         // calculate screen position using perspective projection
-        if rotated_y > 0.0 {  // render objects in front of the player only
+        if rotated_y > 0.0 {
+            // render objects in front of the player only
             let depth_scale = 1.0 / (rotated_y + 1.0).max(0.01); // ensure we don't divide by zero or get negative depth
-            let screen_x = (screen_center_x + rotated_x * depth_scale * 100.0).clamp(0.0, WIDTH as f32 - 1.0);
+            let screen_x =
+                (screen_center_x + rotated_x * depth_scale * 100.0).clamp(0.0, WIDTH as f32 - 1.0);
             let screen_y = (screen_center_y - depth_scale * 100.0).clamp(0.0, HEIGHT as f32 - 1.0);
 
             // render a larger box centered around (screen_x, screen_y)
