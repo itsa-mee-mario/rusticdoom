@@ -3,6 +3,8 @@ use std::time::Instant;
 
 pub struct Game {
     last_update: Instant,
+    pub render_map: bool,
+    last_toggle_time: Instant,
 }
 
 const PLAYER_SPEED: f32 = 100.0; // Pixels per second
@@ -66,6 +68,8 @@ impl Game {
     pub fn new() -> Self {
         Game {
             last_update: Instant::now(),
+            render_map: false,
+            last_toggle_time: Instant::now(),
         }
     }
 
@@ -109,6 +113,14 @@ impl Game {
         if keys.contains(&Key::Right) {
             player.rotate(PLAYER_ROTATION_SPEED * delta_time);
             println!("Right is pressed. Player angle: {}", player.angle);
+        }
+        if keys.contains(&Key::M) {
+            if now.duration_since(self.last_toggle_time).as_millis() > 200 {
+                // Toggle map rendering when 'M' is pressed
+                self.render_map = !self.render_map;
+                println!("Map rendering: {}", self.render_map);
+                self.last_toggle_time = now;
+            }
         }
     }
 }

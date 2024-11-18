@@ -4,7 +4,7 @@ mod wad_reader;
 use game::Game;
 use game::Player;
 use minifb::{Key, Window, WindowOptions};
-use render::{render, HEIGHT, WIDTH};
+use render::{render_raw, HEIGHT, WIDTH};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -15,6 +15,7 @@ use wad_reader::WadData;
 struct GameState {
     buffer: Vec<u32>,
     should_exit: bool,
+    world_objects: Vec<(f32, f32)>,
 }
 
 fn main() {
@@ -24,12 +25,11 @@ fn main() {
     let wad_data = WadData::new(doomengine);
     let world_objects = wad_data.read_vertexes().unwrap();
 
-    // let map = wad.get_map("E1M1").unwrap();
-
     // Shared game state
     let game_state = Arc::new(Mutex::new(GameState {
         buffer: vec![0; WIDTH * HEIGHT],
         should_exit: false,
+        world_objects: world_objects.clone(),
     }));
 
     let mut window = Window::new(
@@ -70,20 +70,25 @@ fn main() {
     let render_thread = {
         let player = Arc::clone(&player);
         let game_state = Arc::clone(&game_state);
+        let game = Arc::clone(&game);
 
         thread::spawn(move || {
             while !game_state.lock().unwrap().should_exit {
                 if let Ok(()) = render_rx.try_recv() {
                     let mut state = game_state.lock().unwrap();
+                    let game = game.lock().unwrap();
                     let player = player.lock().unwrap();
 
-                    render(
-                        &mut state.buffer,
-                        player.x.get_value(),
-                        player.y.get_value(),
-                        player.angle,
-                        // &world_objects,
-                    );
+                    // Clear buffer
+                    for i in state.buffer.iter_mut() {
+                        *i = 0x000000;
+                    }
+
+                    if game.render_map {
+                        // Render WAD vertices when map rendering is enabled
+                        let mut world_objects_copy = state.world_objects.clone();
+                        render_raw(&mut state.buffer, &mut world_objects_copy);
+                    }
                 }
                 thread::sleep(Duration::from_millis(1));
             }
