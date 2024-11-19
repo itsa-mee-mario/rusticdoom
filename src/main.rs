@@ -4,6 +4,7 @@ mod wad_reader;
 use game::Game;
 use game::Player;
 use minifb::{Key, Window, WindowOptions};
+use render::draw_line;
 use render::{render_raw, HEIGHT, WIDTH};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
@@ -85,9 +86,12 @@ fn main() {
                     }
 
                     if game.render_map {
-                        // Render WAD vertices when map rendering is enabled
+                        // Map mode
                         let mut world_objects_copy = state.world_objects.clone();
                         render_raw(&mut state.buffer, &mut world_objects_copy);
+                    } else {
+                        // Game mode
+                        draw_line(&mut state.buffer, 50, 45, 100, 140, 255);
                     }
                 }
                 thread::sleep(Duration::from_millis(1));
