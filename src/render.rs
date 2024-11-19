@@ -2,7 +2,45 @@ pub const WIDTH: usize = 640;
 pub const HEIGHT: usize = 640;
 use std::f32::consts::PI;
 
-pub fn render(
+fn clear_buffer(buffer: &mut Vec<u32>) {
+    for i in 0..WIDTH * HEIGHT {
+        buffer[i] = 0xff000000;
+    }
+}
+
+pub fn draw_line(buffer: &mut Vec<u32>, x1: i32, y1: i32, x2: i32, y2: i32, color: u32) {
+    clear_buffer(buffer);
+    let dx = (x2 - x1).abs();
+    let dy = (y2 - y1).abs(); // delta x and y
+    let sx = if x1 < x2 { 1 } else { -1 };
+    let sy = if y1 < y2 { 1 } else { -1 }; // step directions
+    let mut err = dx - dy;
+
+    let mut x = x1;
+    let mut y = y1;
+
+    loop {
+        if x >= 0 && x < WIDTH as i32 && y >= 0 && y < HEIGHT as i32 {
+            buffer[(y * WIDTH as i32 + x) as usize] = color;
+        }
+
+        if x == x2 && y == y2 {
+            break;
+        }
+
+        let e2 = 2 * err;
+        if e2 > -dy {
+            err -= dy;
+            x += sx;
+        }
+        if e2 < dx {
+            err += dx;
+            y += sy;
+        }
+    }
+}
+
+pub fn perspective_render(
     buffer: &mut Vec<u32>,
     player_x: f32,
     player_y: f32,
