@@ -202,13 +202,13 @@ pub struct Vertex {
 }
 
 pub struct LineDef {
-    start_vertex: Vec<i16>,
-    end_vertex: Vec<i16>,
-    flags: i16,
-    linedef_type: i16,
-    tag: i16,
-    front_sidedef: i16,
-    back_sidedef: i16
+    pub start_vertex: Vec<i16>,
+    pub end_vertex: Vec<i16>,
+    pub flags: i16,
+    pub linedef_type: i16,
+    pub tag: i16,
+    // front_sidedef: i16,
+    // back_sidedef: i16
 }
 
 
@@ -264,18 +264,70 @@ impl WadData {
         Ok(vertices)
     }
 
-    pub fn read_linedef(&self) -> LineDef{
-        let linedef_entry = self
+    //function for linedefs - makes up map shape
+    //every linedef is bw 2 vertices and has 1-2 sidedefs containing wall textures
+    
+    pub fn read_linedefs(&self) -> io::Result<Vec<LineDef>> {
+
+        // Look up the LINEDEFS lump in the directory
+        let linedefs_entry = self
             .wad
             .directory
-            .get_entry('LINEDEFS')
+            .get_entry("LINEDEFS")  
             .ok_or(io::Error::new(
-            io::ErrorKind::NotFound,
-            "VERTEXES lump not found",))?;
+                io::ErrorKind::NotFound,    //if LINEDEFS lump not found
+                "LINEDEFS lump not found",
+            ))?;
 
+        println!("LINEDEFS entry: {:?}", linedefs_entry);
 
+        let mut file = File::open(&self.wad.wad_path)?; //just opens 
 
+        // Seek to the start of the LINEDEFS lump
+        file.seek(SeekFrom::Start(linedefs_entry.filepos as u64))?;
 
+        // Calculate number of linedefs - each is 14 B
+        let num_linedefs = linedefs_entry.size / 14;
+        let mut linedefs = Vec::with_capacity(num_linedefs as usize);   //vector to store linedefs
+
+        // Read all linedefs
+        for _ in 0..num_linedefs {
+            let mut buffer = [0u8; 14]; //buffer to store temp linedef data 
+            file.read_exact(&mut buffer)?;
+
+            let start_vertex = i16::from_le_bytes([buffer[0], buffer[1]]); // an integer value from its representation as a byte array in little endian
+            let end_vertex = i16::from_le_bytes([buffer[2], buffer[3]]);
+            let flags = i16::from_le_bytes([buffer[4], buffer[5]]);
+            let linedef_type = i16::from_le_bytes([buffer[6], buffer[7]]);
+            let tag = i16::from_le_bytes([buffer[8], buffer[9]]);
+            // let front_sidedef = i16::from_le_bytes([buffer[10], buffer[11]]);
+            // let back_sidedef = i16::from_le_bytes([buffer[12], buffer[13]]);
+
+            linedefs.push(LineDef {
+                start_vertex: vec![start_vertex],
+                end_vertex: vec![end_vertex],
+                flags,
+                linedef_type,
+                tag,
+                // front_sidedef,
+                // back_sidedef,
+            });
+        }
+
+        // debugs
+        for (i, linedef) in linedefs.iter().enumerate() {
+            println!(
+                "Linedef {}: start_vertex: {}, end_vertex: {}, flags: {}, type: {}, tag: {}",
+                i,
+                linedef.start_vertex[0],
+                linedef.end_vertex[0],
+                linedef.flags,
+                linedef.linedef_type,
+                linedef.tag
+            );
+        }
+
+        Ok(linedefs)
     }
 
 

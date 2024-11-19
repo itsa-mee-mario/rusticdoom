@@ -4,7 +4,6 @@ mod wad_reader;
 use game::Game;
 use game::Player;
 use minifb::{Key, Window, WindowOptions};
-use render::draw_line;
 use render::{render_raw, HEIGHT, WIDTH};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
@@ -20,11 +19,32 @@ struct GameState {
 }
 
 fn main() {
-    let mut doomengine = DoomEngine::new("wad/doom1.wad");
+    let mut doomengine = DoomEngine::new("wad/doom1.WAD");
     println!("Loading WAD file: {}", doomengine.wad_path);
     let wad = doomengine.load_wad().unwrap();
     let wad_data = WadData::new(doomengine);
     let world_objects = wad_data.read_vertexes().unwrap();
+
+    //read and print linedefs
+    match wad_data.read_linedefs() {
+        Ok(linedefs) => {
+            println!("Successfully read linedefs:");
+            for (i, linedef) in linedefs.iter().enumerate() {
+                println!(
+                    "Linedef {}: start_vertex: {:?}, end_vertex: {:?}, flags: {}, type: {}, tag: {}",
+                    i,
+                    linedef.start_vertex,
+                    linedef.end_vertex,
+                    linedef.flags,
+                    linedef.linedef_type,
+                    linedef.tag
+                );
+            }
+        }
+        Err(e) => {
+            println!("Failed to read linedefs: {}", e);
+        }
+    }
 
     // Shared game state
     let game_state = Arc::new(Mutex::new(GameState {
@@ -86,12 +106,9 @@ fn main() {
                     }
 
                     if game.render_map {
-                        // Map mode
+                        // Render WAD vertices when map rendering is enabled
                         let mut world_objects_copy = state.world_objects.clone();
                         render_raw(&mut state.buffer, &mut world_objects_copy);
-                    } else {
-                        // Game mode
-                        draw_line(&mut state.buffer, 50, 45, 100, 140, 255);
                     }
                 }
                 thread::sleep(Duration::from_millis(1));
