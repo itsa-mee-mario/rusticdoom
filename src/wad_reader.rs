@@ -196,6 +196,22 @@ pub struct WadData {
     wad: DoomEngine,
 }
 
+pub struct Vertex {
+    x: f32,
+    y: f32,
+}
+
+pub struct LineDef {
+    start_vertex: Vec<i16>,
+    end_vertex: Vec<i16>,
+    flags: i16,
+    linedef_type: i16,
+    tag: i16,
+    front_sidedef: i16,
+    back_sidedef: i16
+}
+
+
 impl WadData {
     pub fn new(wad: DoomEngine) -> WadData {
         WadData { wad }
@@ -247,4 +263,20 @@ impl WadData {
         }
         Ok(vertices)
     }
+
+    pub fn read_linedef(&self) -> LineDef{
+        let linedef_entry = self
+            .wad
+            .directory
+            .get_entry('LINEDEFS')
+            .ok_or(io::Error::new(
+            io::ErrorKind::NotFound,
+            "VERTEXES lump not found",))?;
+
+
+
+
+    }
+
+
 }
