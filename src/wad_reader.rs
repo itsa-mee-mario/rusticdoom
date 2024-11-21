@@ -327,7 +327,7 @@ impl WadData {
             );
         }
 
-        Ok(linedefs)
+        Ok(linedefs) //useful - this returns a vector of linedefs
     }
 
 
