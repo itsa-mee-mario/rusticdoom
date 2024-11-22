@@ -4,7 +4,7 @@ mod wad_reader;
 use game::Game;
 use game::Player;
 use minifb::{Key, Window, WindowOptions};
-use render::{render_raw, HEIGHT, WIDTH};
+use render::{perspective_render, render_raw, HEIGHT, WIDTH};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -92,6 +92,7 @@ fn main() {
                         match wad_data.read_linedefs() {
                             Ok(linedefs) => {
                                 render_raw(&mut state.buffer, &mut world_objects_copy, linedefs);
+                                // perspective_render(&mut state.buffer, player.x.get_value(), player.y.get_value(), player.angle, &mut world_objects_copy);
                             }
                             Err(e) => {
                                 println!("Failed to read linedefs for rendering: {}", e);
