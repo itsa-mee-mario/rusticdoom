@@ -19,32 +19,11 @@ struct GameState {
 }
 
 fn main() {
-    let mut doomengine = DoomEngine::new("wad/doom1.WAD");
+    let mut doomengine = DoomEngine::new("wad/doom1.wad");
     println!("Loading WAD file: {}", doomengine.wad_path);
     let wad = doomengine.load_wad().unwrap();
     let wad_data = WadData::new(doomengine);
     let world_objects = wad_data.read_vertexes().unwrap();
-
-    //read and print linedefs
-    match wad_data.read_linedefs() {
-        Ok(linedefs) => {
-            println!("Successfully read linedefs:");
-            for (i, linedef) in linedefs.iter().enumerate() {
-                println!(
-                    "Linedef {}: start_vertex: {:?}, end_vertex: {:?}, flags: {}, type: {}, tag: {}",
-                    i,
-                    linedef.start_vertex,
-                    linedef.end_vertex,
-                    linedef.flags,
-                    linedef.linedef_type,
-                    linedef.tag
-                );
-            }
-        }
-        Err(e) => {
-            println!("Failed to read linedefs: {}", e);
-        }
-    }
 
     // Shared game state
     let game_state = Arc::new(Mutex::new(GameState {
@@ -92,7 +71,7 @@ fn main() {
         let player = Arc::clone(&player);
         let game_state = Arc::clone(&game_state);
         let game = Arc::clone(&game);
-
+        
         thread::spawn(move || {
             while !game_state.lock().unwrap().should_exit {
                 if let Ok(()) = render_rx.try_recv() {
@@ -104,17 +83,27 @@ fn main() {
                     for i in state.buffer.iter_mut() {
                         *i = 0x000000;
                     }
-
+                    
                     if game.render_map {
                         // Render WAD vertices when map rendering is enabled
                         let mut world_objects_copy = state.world_objects.clone();
-                        render_raw(&mut state.buffer, &mut world_objects_copy);
+                        
+                        // Draw the linedefs from the WAD data
+                        match wad_data.read_linedefs() {
+                            Ok(linedefs) => {
+                                render_raw(&mut state.buffer, &mut world_objects_copy, linedefs);
+                            }
+                            Err(e) => {
+                                println!("Failed to read linedefs for rendering: {}", e);
+                            }
+                        }
                     }
                 }
                 thread::sleep(Duration::from_millis(1));
             }
         })
     };
+
 
     // Main game loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
