@@ -122,5 +122,8 @@ impl Game {
                 self.last_toggle_time = now;
             }
         }
+        if keys.contains(&Key::Q) {
+            panic!("Quitting the Game");
+        }
     }
 }
