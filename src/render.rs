@@ -50,7 +50,7 @@ pub fn perspective_render(
     world_objects: &Vec<(f32, f32)>,
 ) {
     for i in buffer.iter_mut() {
-        *i = 0x000000;  
+        *i = 0x000000;
     }
 
     // renderes cross in front of the player
@@ -66,8 +66,6 @@ pub fn perspective_render(
         let object_x = (i as f32) * spacing;
         world_objects.push((object_x, 15.0));
     }
-
-
 
     let screen_center_x = WIDTH as f32 / 2.0;
     let screen_center_y = HEIGHT as f32 / 2.0;
@@ -153,7 +151,11 @@ pub fn perspective_render(
     }
 }
 
-pub fn render_raw(buffer: &mut Vec<u32>, world_objects: &Vec<(f32, f32)>, linedefs: Vec<LineDef>) {
+pub fn render_linedef(
+    buffer: &mut Vec<u32>,
+    world_objects: &Vec<(f32, f32)>,
+    linedefs: Vec<LineDef>,
+) {
     // Clear the buffer first
     for i in buffer.iter_mut() {
         *i = 0x000000;
@@ -197,14 +199,21 @@ pub fn render_raw(buffer: &mut Vec<u32>, world_objects: &Vec<(f32, f32)>, linede
         }
     }
     // println!("Starting to render linedefs, total linedefs: {}", linedefs.len());
-    
-    for linedef in linedefs{
+
+    for linedef in linedefs {
         if let (Some(&(x1_screen, y1_screen)), Some(&(x2_screen, y2_screen))) = (
             screen_objects.get(linedef.start_vertex[0] as usize),
             screen_objects.get(linedef.end_vertex[0] as usize),
         ) {
             // println!("Drawing line: start=({:?}, {:?}), end=({:?}, {:?})", x1_screen, y1_screen, x2_screen, y2_screen);
-            draw_line(buffer, x1_screen as i32, y1_screen as i32, x2_screen as i32, y2_screen as i32, 0xFFFFFF);
+            draw_line(
+                buffer,
+                x1_screen as i32,
+                y1_screen as i32,
+                x2_screen as i32,
+                y2_screen as i32,
+                0xFFFFFF,
+            );
         }
     }
 }

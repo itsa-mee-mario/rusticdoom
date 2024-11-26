@@ -4,7 +4,7 @@ mod wad_reader;
 use game::Game;
 use game::Player;
 use minifb::{Key, Window, WindowOptions};
-use render::{perspective_render, render_raw, HEIGHT, WIDTH};
+use render::{perspective_render, render_linedef, HEIGHT, WIDTH};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -71,7 +71,7 @@ fn main() {
         let player = Arc::clone(&player);
         let game_state = Arc::clone(&game_state);
         let game = Arc::clone(&game);
-        
+
         thread::spawn(move || {
             while !game_state.lock().unwrap().should_exit {
                 if let Ok(()) = render_rx.try_recv() {
@@ -83,28 +83,40 @@ fn main() {
                     for i in state.buffer.iter_mut() {
                         *i = 0x000000;
                     }
-                    
+
                     if game.render_map {
                         // Render WAD vertices when map rendering is enabled
                         let mut world_objects_copy = state.world_objects.clone();
-                        
+
                         // Draw the linedefs from the WAD data
                         match wad_data.read_linedefs() {
                             Ok(linedefs) => {
-                                render_raw(&mut state.buffer, &mut world_objects_copy, linedefs);
-                                // perspective_render(&mut state.buffer, player.x.get_value(), player.y.get_value(), player.angle, &mut world_objects_copy);
+                                render_linedef(
+                                    &mut state.buffer,
+                                    &mut world_objects_copy,
+                                    linedefs,
+                                );
+                                //
                             }
                             Err(e) => {
                                 println!("Failed to read linedefs for rendering: {}", e);
                             }
                         }
+                    } else {
+                        let mut world_objects_copy = state.world_objects.clone();
+                        perspective_render(
+                            &mut state.buffer,
+                            player.x.get_value(),
+                            player.y.get_value(),
+                            player.angle,
+                            &mut world_objects_copy,
+                        );
                     }
                 }
                 thread::sleep(Duration::from_millis(1));
             }
         })
     };
-
 
     // Main game loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
