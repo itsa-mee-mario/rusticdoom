@@ -1,5 +1,5 @@
 use minifb::Key;
-use std::time::Instant;
+use std::{f32::consts::PI, time::Instant};
 
 pub struct Game {
     last_update: Instant,
@@ -8,7 +8,7 @@ pub struct Game {
 }
 
 const PLAYER_SPEED: f32 = 100.0; // Pixels per second
-const PLAYER_ROTATION_SPEED: f32 = 180.0; // Degrees per second
+const PLAYER_ROTATION_SPEED: f32 = 60.0 / (PI * 2.0); // Radians per second
 
 pub struct BoundedFloat {
     value: f32,
@@ -60,7 +60,7 @@ impl Player {
     }
 
     pub fn rotate(&mut self, delta_angle: f32) {
-        self.angle = (self.angle + delta_angle) % 360.0;
+        self.angle = (self.angle + delta_angle) % (2.0 * PI);
     }
 }
 
