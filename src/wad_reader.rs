@@ -145,10 +145,10 @@ impl DoomEngine {
         header.read_header(&mut file)?;
 
         // Print the header information
-        println!(
-            "WAD identification: {:?}, num lumps: {}, info table offset: {}",
-            header.identification, header.numlumps, header.infotableofs
-        );
+        // println!(
+        //     "WAD identification: {:?}, num lumps: {}, info table offset: {}",
+        //     header.identification, header.numlumps, header.infotableofs
+        // );
 
         // Seek to directory location
         file.seek(SeekFrom::Start(header.infotableofs as u64))?;
@@ -161,12 +161,12 @@ impl DoomEngine {
         self.directory = directory;
 
         // Print directory entries
-        for (i, entry) in self.directory.entries.iter().enumerate() {
-            println!(
-                "Entry {}: filepos: {}, size: {}, name: {}",
-                i, entry.filepos, entry.size, entry.name
-            );
-        }
+        // for (i, entry) in self.directory.entries.iter().enumerate() {
+        //     println!(
+        //         "Entry {}: filepos: {}, size: {}, name: {}",
+        //         i, entry.filepos, entry.size, entry.name
+        //     );
+        // }
 
         Ok(())
     }
@@ -187,7 +187,7 @@ impl DoomEngine {
         let x = x as f32;
         let y = y as f32;
 
-        println!("Vertex: x: {}, y: {}", x, y);
+        // println!("Vertex: x: {}, y: {}", x, y);
         Ok((x, y))
     }
 }
@@ -228,7 +228,7 @@ impl WadData {
                 "VERTEXES lump not found",
             ))?;
 
-        println!("VERTEXES entry: {:?}", vertexes_entry);
+        // println!("VERTEXES entry: {:?}", vertexes_entry);
 
         let mut file = File::open(&self.wad.wad_path)?;
 
@@ -258,9 +258,9 @@ impl WadData {
         }
 
         // print vertices
-        for (i, vertex) in vertices.iter().enumerate() {
-            println!("Vertex {}: x: {}, y: {}", i, vertex.0, vertex.1);
-        }
+        // for (i, vertex) in vertices.iter().enumerate() {
+        //     println!("Vertex {}: x: {}, y: {}", i, vertex.0, vertex.1);
+        // }
         Ok(vertices)
     }
 
@@ -279,7 +279,7 @@ impl WadData {
                 "LINEDEFS lump not found",
             ))?;
 
-        println!("LINEDEFS entry: {:?}", linedefs_entry);
+        // println!("LINEDEFS entry: {:?}", linedefs_entry);
 
         let mut file = File::open(&self.wad.wad_path)?; //just opens 
 
@@ -314,18 +314,18 @@ impl WadData {
             });
         }
 
-        // debugs
-        for (i, linedef) in linedefs.iter().enumerate() {
-            println!(
-                "Linedef {}: start_vertex: {}, end_vertex: {}, flags: {}, type: {}, tag: {}",
-                i,
-                linedef.start_vertex[0],
-                linedef.end_vertex[0],
-                linedef.flags,
-                linedef.linedef_type,
-                linedef.tag
-            );
-        }
+        // // debugs
+        // for (i, linedef) in linedefs.iter().enumerate() {
+        //     println!(
+        //         "Linedef {}: start_vertex: {}, end_vertex: {}, flags: {}, type: {}, tag: {}",
+        //         i,
+        //         linedef.start_vertex[0],
+        //         linedef.end_vertex[0],
+        //         linedef.flags,
+        //         linedef.linedef_type,
+        //         linedef.tag
+        //     );
+        // }
 
         Ok(linedefs) //useful - this returns a vector of linedefs
     }
