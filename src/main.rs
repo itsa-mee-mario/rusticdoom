@@ -103,14 +103,25 @@ fn main() {
                             }
                         }
                     } else {
+                        // println!("{}", player.angle);
                         let mut world_objects_copy = state.world_objects.clone();
-                        perspective_render(
-                            &mut state.buffer,
-                            player.x.get_value(),
-                            player.y.get_value(),
-                            player.angle,
-                            &mut world_objects_copy,
-                        );
+                        
+                        match wad_data.read_linedefs() {
+                            Ok(linedefs) => {
+                                perspective_render(
+                                    &mut state.buffer,
+                                    player.x.get_value(),
+                                    player.y.get_value(),
+                                    player.angle,
+                                    &mut world_objects_copy,
+                                    linedefs,        
+                                );
+                                //
+                            }
+                            Err(e) => {
+                                println!("Failed to read linedefs for rendering: {}", e);
+                            }
+                        }
                     }
                 }
                 thread::sleep(Duration::from_millis(1));
