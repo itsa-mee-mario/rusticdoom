@@ -106,8 +106,8 @@ fn main() {
                         let mut world_objects_copy = state.world_objects.clone();
                         perspective_render(
                             &mut state.buffer,
-                            player.x.get_value(),
-                            player.y.get_value(),
+                            player.x,
+                            player.y,
                             player.angle,
                             &mut world_objects_copy,
                         );

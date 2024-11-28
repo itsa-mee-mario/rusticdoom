@@ -7,56 +7,30 @@ pub struct Game {
     last_toggle_time: Instant,
 }
 
-const PLAYER_SPEED: f32 = 100.0; // Pixels per second
-const PLAYER_ROTATION_SPEED: f32 = 180.0; // Degrees per second
-
-pub struct BoundedFloat {
-    value: f32,
-    min: f32,
-    max: f32,
-}
-
-impl BoundedFloat {
-    pub fn new(value: f32, min: f32, max: f32) -> Self {
-        BoundedFloat { value, min, max }
-    }
-
-    pub fn get_value(&self) -> f32 {
-        self.value
-    }
-
-    pub fn add(&mut self, amount: f32) {
-        self.value = (self.value + amount).clamp(self.min, self.max);
-    }
-}
-
-impl std::fmt::Display for BoundedFloat {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.value)
-    }
-}
+const PLAYER_SPEED: f32 = 100.0;
+const PLAYER_ROTATION_SPEED: f32 = 30.0;
 
 pub struct Player {
-    pub x: BoundedFloat,
-    pub y: BoundedFloat,
+    pub x: f32,
+    pub y: f32,
     pub angle: f32,
 }
 
 impl Player {
     pub fn new() -> Self {
         Player {
-            x: BoundedFloat::new(0., -10000., 10000.),
-            y: BoundedFloat::new(0., -10000., 10000.),
+            x: 0.0,
+            y: 0.0,
             angle: 0.0,
         }
     }
 
     pub fn move_x(&mut self, delta: f32) {
-        self.x.add(delta);
+        self.x = self.x + delta;
     }
 
     pub fn move_y(&mut self, delta: f32) {
-        self.y.add(delta);
+        self.y = self.y + delta;
     }
 
     pub fn rotate(&mut self, delta_angle: f32) {
@@ -79,44 +53,48 @@ impl Game {
         self.last_update = now;
 
         if keys.contains(&Key::W) {
-            player.move_y(PLAYER_SPEED * delta_time);
-            println!(
-                "W is pressed. Player y increased to: {}",
-                player.y.get_value()
-            );
-        }
-        if keys.contains(&Key::A) {
-            player.move_x(-PLAYER_SPEED * delta_time);
-            println!(
-                "A is pressed. Player x decreased to: {}",
-                player.x.get_value()
-            );
+            // Move forward in the direction the player is facing
+            let angle_rad = player.angle.to_radians();
+            let dx = angle_rad.cos() * PLAYER_SPEED * delta_time;
+            let dy = angle_rad.sin() * PLAYER_SPEED * delta_time;
+            player.move_x(dx);
+            player.move_y(dy);
         }
         if keys.contains(&Key::S) {
-            player.move_y(-PLAYER_SPEED * delta_time);
-            println!(
-                "S is pressed. Player y decreased to: {}",
-                player.y.get_value()
-            );
+            // Move backward in the opposite direction the player is facing
+            let angle_rad = player.angle.to_radians();
+            let dx = -angle_rad.cos() * PLAYER_SPEED * delta_time;
+            let dy = -angle_rad.sin() * PLAYER_SPEED * delta_time;
+            player.move_x(dx);
+            player.move_y(dy);
+        }
+        if keys.contains(&Key::A) {
+            // Move left, perpendicular to the direction the player is facing
+            let angle_rad = (player.angle - 90.0).to_radians();
+            let dx = angle_rad.cos() * PLAYER_SPEED * delta_time;
+            let dy = angle_rad.sin() * PLAYER_SPEED * delta_time;
+            player.move_x(dx);
+            player.move_y(dy);
         }
         if keys.contains(&Key::D) {
-            player.move_x(PLAYER_SPEED * delta_time);
-            println!(
-                "D is pressed. Player x increased to: {}",
-                player.x.get_value()
-            );
+            // Move right, perpendicular to the direction the player is facing
+            let angle_rad = (player.angle + 90.0).to_radians();
+            let dx = angle_rad.cos() * PLAYER_SPEED * delta_time;
+            let dy = angle_rad.sin() * PLAYER_SPEED * delta_time;
+            player.move_x(dx);
+            player.move_y(dy);
         }
         if keys.contains(&Key::Left) {
+            // Rotate left
             player.rotate(-PLAYER_ROTATION_SPEED * delta_time);
-            println!("Left is pressed. Player angle: {}", player.angle);
         }
         if keys.contains(&Key::Right) {
+            // Rotate right
             player.rotate(PLAYER_ROTATION_SPEED * delta_time);
-            println!("Right is pressed. Player angle: {}", player.angle);
         }
         if keys.contains(&Key::M) {
+            // Toggle map rendering
             if now.duration_since(self.last_toggle_time).as_millis() > 200 {
-                // Toggle map rendering when 'M' is pressed
                 self.render_map = !self.render_map;
                 println!("Map rendering: {}", self.render_map);
                 self.last_toggle_time = now;
